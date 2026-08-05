@@ -1,0 +1,2 @@
+# Byte-stability is this repo's product: LF everywhere, no autocrlf drift.
+* text=auto eol=lf
