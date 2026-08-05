@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"refusal","body":{"class":"gateFailed","verdicts":[{"name":"coverage","threshold":0.9,"direction":"atLeast","observed":0.61,"passed":false},{"name":"rmse","threshold":0.25,"direction":"atMost","observed":0.4402,"passed":false}]}}

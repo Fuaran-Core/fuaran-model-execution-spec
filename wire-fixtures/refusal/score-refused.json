@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"refusal","body":{"class":"scoreRefused","reason":"input-schema-mismatch","detail":"column 'promotion' absent from the input vintage"}}

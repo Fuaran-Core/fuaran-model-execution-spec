@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"submissionReceipt","body":{"batchId":"batch-2026-07-20-a","itemCount":3,"accepted":[{"index":0,"jobId":"job-3a17"},{"index":2,"jobId":"job-8c41"}],"rejected":[{"index":1,"reason":{"class":"unknownProvider","kind":"reference-linear","known":["reference-mean","reference-null"]}}]}}

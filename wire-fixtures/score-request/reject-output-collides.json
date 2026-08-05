@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"scoreRequest","body":{"artifactKeyHash":"sha256:4c12ef9952b7c0b39deca890926521a046c22871ae6fe01021a5faebfa28ec39","input":{"datasetId":"quarterly-holdout","version":2,"contentRef":null},"outputDatasetId":"quarterly-holdout"}}

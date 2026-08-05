@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "An ordered batch of requested fits under one correlation id (§5.3).",
+  "$comment": "No $id: references resolve relative to this file's own location, so the schema set is self-contained and relocatable.",
+  "$ref": "common.schema.json#/$defs/fitSubmissionBatch"
+}

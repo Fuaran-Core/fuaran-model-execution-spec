@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Apply a registered artifact to an input vintage (§5.6).",
+  "$comment": "No $id: references resolve relative to this file's own location, so the schema set is self-contained and relocatable.",
+  "$ref": "common.schema.json#/$defs/scoreRequest"
+}

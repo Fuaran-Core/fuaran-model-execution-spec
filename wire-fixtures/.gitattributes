@@ -1,0 +1,20 @@
+# A fixture file's BYTES are the document (see README.md, "Reading a
+# fixture"): the manifest records a sha256 over the file itself, with no
+# convention to interpret first. Line-ending churn here is corpus
+# corruption, not formatting — every recorded digest would move at once,
+# and the failure would surface on someone else's machine as a
+# specification defect that is not one.
+#
+# The documents happen to contain no newline at all, so normalisation is
+# currently a no-op. This file exists so that stays true by rule rather
+# than by luck, and so a future broad rule in a parent .gitattributes
+# cannot silently take the corpus with it.
+*.json -text
+
+# The index is a hand-formatted document for humans, and is not itself a
+# specified wire shape.
+manifest.json text eol=lf
+
+# The emitter and the checker are ordinary source.
+*.mjs text eol=lf
+*.md  text eol=lf

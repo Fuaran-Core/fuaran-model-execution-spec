@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"refusal","body":{"class":"storageFailure","reason":"object store returned 503 after 3 attempts"}}

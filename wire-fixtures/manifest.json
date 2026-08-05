@@ -1,0 +1,506 @@
+{
+  "specification": "model-execution-wire",
+  "envelopeVersion": 1,
+  "families": [
+    "envelope",
+    "vintage-ref",
+    "fit-submission",
+    "fit-outcome",
+    "registry-query",
+    "score-request",
+    "refusal",
+    "spec-hash"
+  ],
+  "reservedFamilies": [],
+  "profiles": {
+    "observer": [ "envelope", "vintage-ref", "fit-outcome", "refusal" ],
+    "submitter": [ "envelope", "vintage-ref", "fit-outcome", "refusal", "fit-submission", "registry-query", "score-request", "spec-hash" ],
+    "executor": [ "envelope", "vintage-ref", "fit-outcome", "refusal", "fit-submission", "registry-query", "score-request", "spec-hash" ]
+  },
+  "schemas": {
+    "envelope": "../schemas/v1/envelope.schema.json",
+    "vintageRef": "../schemas/v1/vintage-ref.schema.json",
+    "resolvedVintage": "../schemas/v1/resolved-vintage.schema.json",
+    "fitSubmission": "../schemas/v1/fit-submission.schema.json",
+    "fitSubmissionBatch": "../schemas/v1/fit-submission-batch.schema.json",
+    "submissionReceipt": "../schemas/v1/submission-receipt.schema.json",
+    "compositeKey": "../schemas/v1/composite-key.schema.json",
+    "fitOutcome": "../schemas/v1/fit-outcome.schema.json",
+    "registryQuery": "../schemas/v1/registry-query.schema.json",
+    "outcomePage": "../schemas/v1/outcome-page.schema.json",
+    "scoreRequest": "../schemas/v1/score-request.schema.json",
+    "refusal": "../schemas/v1/refusal.schema.json"
+  },
+  "vectors": [
+    {
+      "id": "envelope/v1",
+      "family": "envelope",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "envelope/v1.json",
+      "sha256": "ffeb97cc2491a6517b39cae7d72c037a20e22e2f5a10c084ae76934960b1bb2f",
+      "description": "The smallest complete document there is: envelope version 1, a registered kind, and the smallest body. Every other envelope vector differs from this one in exactly one member."
+    },
+    {
+      "id": "envelope/reject-version-unsupported",
+      "family": "envelope",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "envelope/reject-version-unsupported.json",
+      "sha256": "7107f0c1ebdbb50358f262ba057fb17bf3780c1a8bfe8dcc41d9f163df413ec8",
+      "reject": "envelope-version-unsupported",
+      "detect": "schema",
+      "description": "An envelope at a version this specification does not define. A v1 reader refuses it whole and names both versions — reading it partially would let a member it has no field for satisfy a requirement by omission."
+    },
+    {
+      "id": "envelope/reject-unknown-kind",
+      "family": "envelope",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "envelope/reject-unknown-kind.json",
+      "sha256": "476e995b5042ba9432d509837ea94910cf417788e2abf2b29a6b57cdbf15d8fe",
+      "reject": "envelope-kind-unknown",
+      "detect": "schema",
+      "description": "A body shape that is not in the kind registry. Refused with `unknownDocumentKind`, never guessed at from the body's shape — the refusal is how a reader discovers it is older than its counterparty."
+    },
+    {
+      "id": "envelope/reject-malformed",
+      "family": "envelope",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "envelope/reject-malformed.json",
+      "sha256": "81d81eb338d49511a882c183e4a711af6e3efaed18d783045b145c8f4bed9a46",
+      "reject": "envelope-malformed",
+      "detect": "schema",
+      "description": "An envelope with no body at all. Well-formed JSON, not a well-formed envelope."
+    },
+    {
+      "id": "vintage-ref/ref",
+      "family": "vintage-ref",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "vintage-ref/ref.json",
+      "sha256": "1e68384c318a8f24dccc3dde9cc59c6a8f300664c09af59a988b6d248613f47c",
+      "description": "A vintage pinned all the way down to the bytes: dataset, version, format, content address and row count. The row count is the corpus's first sign-prefixed 64-bit integer."
+    },
+    {
+      "id": "vintage-ref/ref-unpinned",
+      "family": "vintage-ref",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "vintage-ref/ref-unpinned.json",
+      "sha256": "2ecde9b0d8366775cfe8c3ffb351cbc1e20c0cc57a34fda5f26551f60f728298",
+      "description": "The ordinary submitter shape: which vintage, with the content ref left for the executor to resolve. A null content ref is conformant, not incomplete."
+    },
+    {
+      "id": "vintage-ref/resolved",
+      "family": "vintage-ref",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "vintage-ref/resolved.json",
+      "sha256": "a1c26a687bdf73dcf386e397b3a49bf4e0e859a032ffb8ade105c482cb61e208",
+      "description": "The executor's answer to 'what is this, exactly?' — the ref with its content ref present, when it came into existence, and whether it was the latest at the moment of asking."
+    },
+    {
+      "id": "vintage-ref/reject-format-invalid",
+      "family": "vintage-ref",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "vintage-ref/reject-format-invalid.json",
+      "sha256": "3b059bb3235d7a6ac034e14a49cf9fec4f2892a0686e43b16ed68d9bf5843c66",
+      "reject": "vintage-format-invalid",
+      "detect": "schema",
+      "description": "A format identifier with an uppercase letter and a space. An UNREGISTERED format is not an error — the registry is open — but an identifier that can never be registered is always a defect."
+    },
+    {
+      "id": "fit-submission/submission",
+      "family": "fit-submission",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "fit-submission/submission.json",
+      "sha256": "b8624004107bf925beef32db5975e12553df8393406d86efd281b92cedf595ed",
+      "description": "One fit: an opaque payload with the hash its submitter minted, a provider kind, a seed, three gates authored out of order and emitted sorted, and the submitter class."
+    },
+    {
+      "id": "fit-submission/batch",
+      "family": "fit-submission",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "fit-submission/batch.json",
+      "sha256": "d9c96836f832eda3098127839dc3212e63cd92f7c67107a14c2ebad9407f252d",
+      "description": "Three submissions under one correlation id, one per submitter class, in the SUBMITTER's order — the one list in this specification that is not sorted, because the receipt indexes into it. Carries a negative seed and a seed beyond exact double range."
+    },
+    {
+      "id": "fit-submission/receipt",
+      "family": "fit-submission",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "fit-submission/receipt.json",
+      "sha256": "931954384fad86c413675cfeed9625dac0cae85cca69f8e654afb45cb81f8d51",
+      "description": "Partial acceptance as data: two items enqueued with job handles, one refused with a typed refusal carrying the providers that WERE available. The two lists partition the submitted indices exactly."
+    },
+    {
+      "id": "fit-submission/reject-batch-empty",
+      "family": "fit-submission",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "fit-submission/reject-batch-empty.json",
+      "sha256": "260fa7aa6a29aa128cb08a962e5ab03c1aa529d0ead77ffa00d6f1d25ff6c050",
+      "reject": "submission-batch-empty",
+      "detect": "schema",
+      "description": "A batch with no submissions. A receipt for nothing is indistinguishable from a receipt whose items were all lost."
+    },
+    {
+      "id": "fit-submission/reject-gate-direction",
+      "family": "fit-submission",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "fit-submission/reject-gate-direction.json",
+      "sha256": "748bd58bd0f4efba42090939d513cbe6cd0cc7de724d53d4ec053f15baeafb66",
+      "reject": "submission-gate-direction-unknown",
+      "detect": "schema",
+      "description": "A gate direction outside the closed vocabulary. Refused rather than defaulted: a gate whose direction is guessed is a gate that silently passes."
+    },
+    {
+      "id": "fit-submission/reject-submitter-class",
+      "family": "fit-submission",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "fit-submission/reject-submitter-class.json",
+      "sha256": "e594ad6dd9233f9f4cc8d758cc93ca0577f7acc43cfaed3e1eacb5bd8b4f98ce",
+      "reject": "submission-submitter-class-unknown",
+      "detect": "schema",
+      "description": "A submitter class outside the closed vocabulary. Defaulting an unknown class to `human` would make the stricter policy path unreachable by exactly the callers it exists for."
+    },
+    {
+      "id": "fit-submission/reject-spec-hash-absent",
+      "family": "fit-submission",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "fit-submission/reject-spec-hash-absent.json",
+      "sha256": "8fdcd3e7b054c75fdbb7e9ef05e0ea49cc95c85215024a9eba19ebd93163368b",
+      "reject": "submission-spec-hash-absent",
+      "detect": "schema",
+      "description": "An empty spec hash. The executor cannot mint one — the payload is opaque to it — so a submission with no hash is a fit that can never be joined to the decision that asked for it."
+    },
+    {
+      "id": "fit-outcome/composite-key",
+      "family": "fit-outcome",
+      "profile": "observer",
+      "kind": "hash",
+      "file": "fit-outcome/composite-key.json",
+      "sha256": "815f9b8f6d67383ff0bcdfb9188bf481fcfa80d779951974c1cfc13a26b4f6a5",
+      "digest": "sha256:2ac4e6853673e53cfd662018aafa79a8ba026b40e1648e9adb5da829c5744980",
+      "description": "The join, on its own. `digest` is the content address over the canonical bytes of the BODY — the value every implementation must reproduce, and the one number in this corpus that two parties sharing no type must independently agree on."
+    },
+    {
+      "id": "fit-outcome/outcome",
+      "family": "fit-outcome",
+      "profile": "observer",
+      "kind": "hash",
+      "file": "fit-outcome/outcome.json",
+      "sha256": "e1934bf5351bd98cdb27518aad5f979f286c465e7f2b4093c0b4c815355b16f7",
+      "digest": "sha256:2ac4e6853673e53cfd662018aafa79a8ba026b40e1648e9adb5da829c5744980",
+      "description": "A fit that ran, passed its gates and was approved. Diagnostics and verdicts authored out of order and emitted sorted; a non-finite diagnostic dropped rather than encoded; `digest` recomputed over the embedded composite key, and equal to the document's own `compositeKeyHash`."
+    },
+    {
+      "id": "fit-outcome/outcome-gate-failed",
+      "family": "fit-outcome",
+      "profile": "observer",
+      "kind": "hash",
+      "file": "fit-outcome/outcome-gate-failed.json",
+      "sha256": "8a4ae8c77c7b05978cef0ffb93909191add22d13101fee522cb478a9a9836363",
+      "digest": "sha256:5221264f67eb8170cfa101843555b0a07c1221eb64521e4ee5793a48f30bf4d8",
+      "description": "A fit that ran, failed both gates, retained no artifact, and was registered anyway — a failure is evidence. Also the corpus's empty-map and null-cost case."
+    },
+    {
+      "id": "fit-outcome/reject-composite-key-mismatch",
+      "family": "fit-outcome",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "fit-outcome/reject-composite-key-mismatch.json",
+      "sha256": "44ceb67b9fd93c1111f76fa17c6fc5f5a8e8b83d364f942cdaddf19f6f8e7ffc",
+      "reject": "outcome-composite-key-mismatch",
+      "detect": "rule",
+      "description": "An outcome whose stated identity does not match a recomputation over its own composite key. Corrupt or edited after registration — refused, never stored. Schema-valid by construction: only the identity rule catches it."
+    },
+    {
+      "id": "registry-query/query",
+      "family": "registry-query",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "registry-query/query.json",
+      "sha256": "48df78c927a26110ebbe4fdceb78ccc339e8b0c223f0904a471a25b65aa348d9",
+      "description": "A conjunctive multi-key query with every filter list authored out of order and emitted sorted, and a first page (null cursor)."
+    },
+    {
+      "id": "registry-query/query-any",
+      "family": "registry-query",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "registry-query/query-any.json",
+      "sha256": "e3f274362677c0628c08474c9f5750406f65a3321748655101e50ccd44f900d6",
+      "description": "The match-anything query — every filter empty — resuming from an opaque cursor at the maximum page size. Empty is 'any', never 'nothing'."
+    },
+    {
+      "id": "registry-query/page",
+      "family": "registry-query",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "registry-query/page.json",
+      "sha256": "1aba078b34e95e3fe9887580f54af660508343b24810b3cd8cb56e6bfa7ac5d0",
+      "description": "A page of two outcomes ordered by composite-key hash — a value that exists before an outcome is stored and never changes, which is what makes paging stable while new outcomes are being registered."
+    },
+    {
+      "id": "registry-query/page-last",
+      "family": "registry-query",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "registry-query/page-last.json",
+      "sha256": "47efe8796d325cac61528bafa4fc11bfadb6d9458263cc778b6372cec8f61782",
+      "description": "The last page: a null cursor is the terminator, and is the only thing that ends a paging loop."
+    },
+    {
+      "id": "registry-query/reject-limit",
+      "family": "registry-query",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "registry-query/reject-limit.json",
+      "sha256": "e1587a6d74e9ba87290bfee010cd1422879bdfb508e56244bf375409bf5f3f55",
+      "reject": "query-limit-out-of-range",
+      "detect": "schema",
+      "description": "A page size of zero. Answering it with a default page size would make a caller's loop silently ask for something else than it asked for."
+    },
+    {
+      "id": "score-request/request",
+      "family": "score-request",
+      "profile": "submitter",
+      "kind": "round-trip",
+      "file": "score-request/request.json",
+      "sha256": "c2b53c90ac2c53f0b6671341344443bbcf1e78eda84ae345964529bc41411eff",
+      "description": "Apply a registered artifact — named by the composite-key hash of the outcome that produced it — to an input vintage, with predictions landing in a distinct dataset."
+    },
+    {
+      "id": "score-request/reject-output-collides",
+      "family": "score-request",
+      "profile": "executor",
+      "kind": "reject",
+      "file": "score-request/reject-output-collides.json",
+      "sha256": "af89ff932a0745666ca3fc82b60c58a069c327ffde10861dcd0d840f529db0b1",
+      "reject": "score-output-collides-with-input",
+      "detect": "rule",
+      "description": "Predictions asked to land as a new version of the very dataset they were derived from. Schema-valid; caught only by comparing the two identifiers."
+    },
+    {
+      "id": "refusal/envelope-version-mismatch",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/envelope-version-mismatch.json",
+      "sha256": "732c024c035a31a36062f02b04a88f7790d85224697af686feca2f039873e976",
+      "description": "The refusal a version-unsupported envelope produces, naming both what arrived and what is accepted."
+    },
+    {
+      "id": "refusal/unknown-document-kind",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/unknown-document-kind.json",
+      "sha256": "857d6d0805e47694d9affeffa69e2453df326eca5292d3d0599df713dc7139aa",
+      "description": "An unimplemented body shape, with the kinds this participant does implement — so the caller re-aims without a second round trip."
+    },
+    {
+      "id": "refusal/invalid-submission",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/invalid-submission.json",
+      "sha256": "57725bf712544eb2be7138558a976dbe4af0cd87d681734eb3633a4d78108277",
+      "description": "A submission denied before any work was scheduled."
+    },
+    {
+      "id": "refusal/invalid-query",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/invalid-query.json",
+      "sha256": "c1c624f5459bfcd51a73b22e6ba981133a6da6531490e9546ca3e49eaf1cf034",
+      "description": "A malformed query — an out-of-range limit, an unknown status, an unusable cursor."
+    },
+    {
+      "id": "refusal/unknown-provider",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/unknown-provider.json",
+      "sha256": "49ea23730047a475415c48baac9eb2b550c6dc4174fdd654a794e4b323974e98",
+      "description": "No provider of the requested kind here, with the kinds that ARE available, sorted."
+    },
+    {
+      "id": "refusal/budget-denied",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/budget-denied.json",
+      "sha256": "3f7ff2d89f63351f32c66037c79584ca8f7476c10ebaabc3bfb2a5daafbbff87",
+      "description": "Refused on cost grounds before it ran, with quota, spend and the accounting unit — the numbers a caller needs to decide whether to wait or to ask for less."
+    },
+    {
+      "id": "refusal/gate-failed",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/gate-failed.json",
+      "sha256": "e214b287abb739ca8f1eb5de96fbac3d09df16a3450019f3ed99f5ff1b44c1c8",
+      "description": "Work completed but did not clear its gates, and the executor's policy is to refuse rather than register. Carries the verdicts, so the submitter need not re-query to learn which gate."
+    },
+    {
+      "id": "refusal/policy-refused",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/policy-refused.json",
+      "sha256": "240d908771f1f4a0464e67c77fd89ae175061e3534524e7d17ad55d24f4f67bb",
+      "description": "A named policy refused it. The rule's identifier is stable; its wording is not."
+    },
+    {
+      "id": "refusal/scope-unavailable",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/scope-unavailable.json",
+      "sha256": "124b272fbad007ccff6044bdb74caa4bbef8e78e379296fe5a070e5437dc6665",
+      "description": "The corpus's payload-free refusal: a class with no members is still an object with a `class`, never a bare string."
+    },
+    {
+      "id": "refusal/forbidden",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/forbidden.json",
+      "sha256": "15de272c3ed17f41356cd4a222de80afc8e7d9f3c2b786d4b515d711c82feacc",
+      "description": "The scope resolved, and does not permit the operation. Distinct from having no scope at all."
+    },
+    {
+      "id": "refusal/not-found",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/not-found.json",
+      "sha256": "c686b362d6b021053e65cd739006143989ae54c98f344a22b8fe5f3b45ea6a9a",
+      "description": "No such thing in the caller's scope — deliberately indistinguishable from 'exists, but not yours'."
+    },
+    {
+      "id": "refusal/substrate-unavailable",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/substrate-unavailable.json",
+      "sha256": "a5f4c3327cf0bd7b99a6928f9fb4df34fa6f8ca674ec8023fcafbea0c8d45c51",
+      "description": "The capability is not composed in this deployment. Distinct from `notFound`: the thing asked for is not merely absent, it is not offered."
+    },
+    {
+      "id": "refusal/score-refused",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/score-refused.json",
+      "sha256": "04835b3b0b4293f9a74e2ce3ea7f520dbe2bc92b1fa2ae9a7fd650149616331c",
+      "description": "Scoring refused with a typed sub-reason from the score-reason registry, plus free-form detail that is diagnostic and not contractual."
+    },
+    {
+      "id": "refusal/storage-failure",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/storage-failure.json",
+      "sha256": "c75d6529fa9e93370df05f6881166225f55e529487a8a2622cbf9b321f60e7cc",
+      "description": "The underlying store failed. The wording is not stable and must not be matched on; the class is."
+    },
+    {
+      "id": "refusal/unspecified",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "round-trip",
+      "file": "refusal/unspecified.json",
+      "sha256": "814193f5bf097c51036ed994cd77ae88f5c76a070a3cd2cdeb5181cf21790489",
+      "description": "The catch-all, so that nothing ever escapes as an exception. A refusal a program cannot branch on is still infinitely better than one it cannot detect."
+    },
+    {
+      "id": "refusal/unknown-class",
+      "family": "refusal",
+      "profile": "observer",
+      "kind": "accept",
+      "file": "refusal/unknown-class.json",
+      "sha256": "1cc811ea79d30628986ff56097bd7e48d36eee3619bc87bba24d47dddff56f85",
+      "interpretation": "unspecified",
+      "description": "A refusal class registered after this version, carrying members a v1 reader has no field for. A conformant reader MUST accept it, read it as `unspecified`, keep whatever human-readable text it can find, and report the unrecognised class name. An implementation that refuses this vector is one that will break on the next additive change."
+    },
+    {
+      "id": "spec-hash/canonical-form",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "hash",
+      "file": "spec-hash/canonical-form.json",
+      "sha256": "41101b67271b6ae2e1066ee35fcd0784a56e0e03f9b3e78c7277ded157fd6667",
+      "digest": "sha256:ab905088dba00f9f1765e559d54568329fa51738bcebf5890431a49ea88bd24f",
+      "canonicalPayload": "{\"family\":\"linear\",\"prior\":{\"scale\":2.5},\"response\":\"units\",\"terms\":[\"price\",\"promotion\",\"seasonality\"]}",
+      "description": "A rendering that is already in canonical form, so the rule's intermediate equals its input. The minting rule is a NORMALISATION, and this is its fixed point — the vector to start an implementation against, because a divergence here is a divergence in escaping or number formatting alone, with ordering not yet in play."
+    },
+    {
+      "id": "spec-hash/permuted-form",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "hash",
+      "file": "spec-hash/permuted-form.json",
+      "sha256": "dc8e071ad4917b794e8b4930e7e16fc66c876438f700d8fe7789bef8d2b69f01",
+      "digest": "sha256:ab905088dba00f9f1765e559d54568329fa51738bcebf5890431a49ea88bd24f",
+      "canonicalPayload": "{\"family\":\"linear\",\"prior\":{\"scale\":2.5},\"response\":\"units\",\"terms\":[\"price\",\"promotion\",\"seasonality\"]}",
+      "description": "The same specification as `canonical-form`, authored with its members permuted at every level and indented across lines. Its own `sha256` differs; its `canonicalPayload` and `digest` are identical. That is §4.2 rule 3 made observable, and an implementation that reproduces every other vector but not this pairing has a canonicalisation that depends on authoring order. The term list is deliberately NOT permuted: an array's order is data, so permuting it would be a different specification rather than a different rendering of this one."
+    },
+    {
+      "id": "spec-hash/numbers",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "hash",
+      "file": "spec-hash/numbers.json",
+      "sha256": "23bae22e46ae7de856d4d1ad6d58ee0b75f58b170fa00ca3bceff7c0512752a6",
+      "digest": "sha256:d4f23844f1e4ac5215bba74f741627bdb553277cc57a467995b021b872ef1478",
+      "canonicalPayload": "{\"exponent\":1000,\"identifier\":\"+9007199254740993\",\"integral\":42,\"negative\":-0.0025,\"ratio\":0.1,\"tiny\":1e-7,\"trailing\":1.5,\"zero\":0}",
+      "description": "Number normalisation: negative zero becomes `0`, an exponent becomes its shortest round-trip decimal, a trailing zero is dropped, and a value small enough to keep its exponent keeps it. `identifier` carries a value beyond exact double range as a STRING — the shape §4.5 requires of a submitter, for the same reason §3.2 divergence 2 requires it on the wire."
+    },
+    {
+      "id": "spec-hash/unicode",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "hash",
+      "file": "spec-hash/unicode.json",
+      "sha256": "3d7fec3030ce510dd8292daf2ff8413fd85110aca09cba8d2bc45e08c5a7a82a",
+      "digest": "sha256:0da453982dd9856ddc8a1f8051c0291c69703f1e89a15f2713a7f7a14f79dd3e",
+      "canonicalPayload": "{\"astral\":\"😀\",\"backslash\":\"a\\\\b\",\"control\":\"tab\\there\",\"nonAscii\":\"naïve — αβγ\",\"quote\":\"a \\\"quoted\\\" term\",\"𐀀\":\"astral-key\",\"�\":\"replacement-key\"}",
+      "description": "Escaping and ordering over the whole character range: a quote, a backslash, a control character with a short escape, literal non-ASCII, and an astral-plane character. Two of the keys are non-ASCII and pin the ordering rule — keys sort by UTF-16 CODE UNIT (§3.1 rule 12), so the astral key sorts BEFORE U+FFFD; an implementation sorting by code point puts it after and mints a different hash for the same specification."
+    },
+    {
+      "id": "spec-hash/nested",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "hash",
+      "file": "spec-hash/nested.json",
+      "sha256": "0a37e4b492de02473073c35765dc79d386aeb0b393280fa041454d9019b28bbe",
+      "digest": "sha256:c21646050c75c79d10cd77bddd023c84f6fec87a7ba52f83183e7cd7d3a3141f",
+      "canonicalPayload": "{\"meta\":{},\"model\":{\"intercept\":true,\"terms\":[{\"name\":\"price\",\"transform\":{\"kind\":\"log\",\"shift\":1}},{\"name\":\"promotion\",\"transform\":null}]},\"notes\":[],\"version\":\"2\"}",
+      "description": "Structure: an empty object, an empty array, a null, a boolean, and an array of objects. The array keeps its order while each element's members sort — the two rules of §4.5 step 2 acting on the same value, which is where an implementation that sorts everything or sorts nothing shows itself."
+    },
+    {
+      "id": "spec-hash/reject-raw-bytes-minted",
+      "family": "spec-hash",
+      "profile": "submitter",
+      "kind": "reject",
+      "file": "spec-hash/reject-raw-bytes-minted.json",
+      "sha256": "096de8eea8222a12595522b8898aba0c0400bbbaa52d54b3edd053e6764cce01",
+      "reject": "submission-spec-hash-non-canonical",
+      "detect": "rule",
+      "description": "`permuted-form` with its hash minted over the payload AS RENDERED instead of over the canonical bytes — the one implementation error the rule exists to exclude, and the only reject vector in this corpus a submitter rather than an executor must catch (§2). Nothing downstream is permitted to notice it (§4.2 rule 2): the executor stores it, keys by it, and every join against the submitter's own record silently misses. Schema-valid by construction — it is a well-formed content address over the wrong bytes."
+    }
+  ]
+}

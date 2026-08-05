@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "What came out of a fit, and what names it (§5.4).",
+  "$comment": "No $id: references resolve relative to this file's own location, so the schema set is self-contained and relocatable.",
+  "$ref": "common.schema.json#/$defs/fitOutcome"
+}

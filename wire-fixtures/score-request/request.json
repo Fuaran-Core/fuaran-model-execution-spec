@@ -1,0 +1,1 @@
+{"envelopeVersion":1,"kind":"scoreRequest","body":{"artifactKeyHash":"sha256:2ac4e6853673e53cfd662018aafa79a8ba026b40e1648e9adb5da829c5744980","input":{"datasetId":"quarterly-holdout","version":2,"contentRef":null},"outputDatasetId":"quarterly-holdout-predictions"}}

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "The versioned envelope every document rides in (§5.1).",
+  "$comment": "No $id: references resolve relative to this file's own location, so the schema set is self-contained and relocatable.",
+  "$ref": "common.schema.json#/$defs/envelope"
+}

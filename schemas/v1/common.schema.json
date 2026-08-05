@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Model-execution wire specification v1 — shared definitions",
+  "$comment": "No $id: references resolve relative to this file, so the schema set is self-contained and relocatable. Structural only, and subordinate to MODEL_EXECUTION_WIRE.md §5 (see §9.7). A schema cannot express member ordering, the absence of whitespace, that a hash equals a recomputation, or that a hash was minted over the canonical form of the payload beside it (§4.5) — passing validation is necessary and nowhere near sufficient.",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "$comment": "§7 lexical rule: lowercase, digits, interior hyphens."
+    },
+    "contentAddress": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "$comment": "§4.1. The algorithm is named inside the value; a bare hex string is not a content address."
+    },
+    "int64": {
+      "type": "string",
+      "pattern": "^[+-](0|[1-9][0-9]*)$",
+      "$comment": "§3.1 rule 8: a sign-prefixed decimal string, because a 64-bit integer is not exactly representable as a double."
+    },
+    "int64OrNull": {
+      "oneOf": [{ "$ref": "#/$defs/int64" }, { "type": "null" }]
+    },
+    "real": {
+      "type": "number",
+      "$comment": "§3.1 rule 9: shortest round-trip decimal. Non-finite values cannot be expressed in JSON and are therefore excluded by construction."
+    },
+    "instant": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?[+-][0-9]{2}:[0-9]{2}$"
+    },
+    "instantOrNull": {
+      "oneOf": [{ "$ref": "#/$defs/instant" }, { "type": "null" }]
+    },
+    "documentKind": {
+      "type": "string",
+      "enum": [
+        "vintageRef",
+        "resolvedVintage",
+        "fitSubmission",
+        "fitSubmissionBatch",
+        "submissionReceipt",
+        "compositeKey",
+        "fitOutcome",
+        "registryQuery",
+        "outcomePage",
+        "scoreRequest",
+        "refusal"
+      ],
+      "$comment": "§7.1."
+    },
+    "gateDirection": {
+      "type": "string",
+      "enum": ["atLeast", "atMost"],
+      "$comment": "§7.5 — closed."
+    },
+    "submitterClass": {
+      "type": "string",
+      "enum": ["human", "scheduled", "agent"],
+      "$comment": "§7.6 — closed."
+    },
+    "lifecycleStatus": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "$comment": "§7.7 is open for addition, so only the §7 lexical rule is enforced here — not the seed set."
+    },
+
+    "contentRef": {
+      "type": "object",
+      "required": ["format", "hash", "rowCount"],
+      "additionalProperties": false,
+      "properties": {
+        "format": { "$ref": "#/$defs/identifier" },
+        "hash": { "$ref": "#/$defs/contentAddress" },
+        "rowCount": { "$ref": "#/$defs/int64OrNull" }
+      }
+    },
+    "contentRefOrNull": {
+      "oneOf": [{ "$ref": "#/$defs/contentRef" }, { "type": "null" }]
+    },
+    "vintageRef": {
+      "type": "object",
+      "required": ["datasetId", "version", "contentRef"],
+      "additionalProperties": false,
+      "properties": {
+        "datasetId": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1 },
+        "contentRef": { "$ref": "#/$defs/contentRefOrNull" }
+      }
+    },
+    "resolvedVintage": {
+      "type": "object",
+      "required": ["ref", "createdAt", "isLatest"],
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "$ref": "#/$defs/vintageRef" },
+        "createdAt": { "$ref": "#/$defs/instant" },
+        "isLatest": { "type": "boolean" }
+      }
+    },
+
+    "gate": {
+      "type": "object",
+      "required": ["name", "threshold", "direction"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "threshold": { "$ref": "#/$defs/real" },
+        "direction": { "$ref": "#/$defs/gateDirection" }
+      }
+    },
+    "gateVerdict": {
+      "type": "object",
+      "required": ["name", "threshold", "direction", "observed", "passed"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "threshold": { "$ref": "#/$defs/real" },
+        "direction": { "$ref": "#/$defs/gateDirection" },
+        "observed": { "$ref": "#/$defs/real" },
+        "passed": { "type": "boolean" }
+      }
+    },
+
+    "fitSubmission": {
+      "type": "object",
+      "required": [
+        "vintage",
+        "specPayload",
+        "specHash",
+        "specHashAlgorithm",
+        "providerKind",
+        "seed",
+        "gates",
+        "submitterClass"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "vintage": { "$ref": "#/$defs/vintageRef" },
+        "specPayload": { "type": "string" },
+        "specHash": { "$ref": "#/$defs/contentAddress" },
+        "specHashAlgorithm": {
+          "$ref": "#/$defs/identifier",
+          "$comment": "§7.4 is open, so only the lexical rule is enforced here — not the registered set. Naming a REGISTERED rule additionally asserts that specHash is the minting of specPayload under it (§4.2 rule 5, §4.5); no schema can express that, and validate.mjs checks it as a rule."
+        },
+        "providerKind": { "$ref": "#/$defs/identifier" },
+        "seed": { "$ref": "#/$defs/int64" },
+        "gates": { "type": "array", "items": { "$ref": "#/$defs/gate" } },
+        "submitterClass": { "$ref": "#/$defs/submitterClass" }
+      }
+    },
+    "fitSubmissionBatch": {
+      "type": "object",
+      "required": ["batchId", "submissions"],
+      "additionalProperties": false,
+      "properties": {
+        "batchId": { "type": "string", "minLength": 1 },
+        "submissions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/fitSubmission" }
+        }
+      }
+    },
+    "acceptedItem": {
+      "type": "object",
+      "required": ["index", "jobId"],
+      "additionalProperties": false,
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "jobId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "rejectedItem": {
+      "type": "object",
+      "required": ["index", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "reason": { "$ref": "#/$defs/refusal" }
+      }
+    },
+    "submissionReceipt": {
+      "type": "object",
+      "required": ["batchId", "itemCount", "accepted", "rejected"],
+      "additionalProperties": false,
+      "properties": {
+        "batchId": { "type": "string", "minLength": 1 },
+        "itemCount": { "type": "integer", "minimum": 1 },
+        "accepted": { "type": "array", "items": { "$ref": "#/$defs/acceptedItem" } },
+        "rejected": { "type": "array", "items": { "$ref": "#/$defs/rejectedItem" } }
+      }
+    },
+
+    "compositeKey": {
+      "type": "object",
+      "required": ["specHash", "vintage", "seed", "providerId", "providerVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "specHash": { "$ref": "#/$defs/contentAddress" },
+        "vintage": { "$ref": "#/$defs/vintageRef" },
+        "seed": { "$ref": "#/$defs/int64" },
+        "providerId": { "$ref": "#/$defs/identifier" },
+        "providerVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "artifactRef": {
+      "type": "object",
+      "required": ["artifactId", "contentHash", "format"],
+      "additionalProperties": false,
+      "properties": {
+        "artifactId": { "type": "string", "minLength": 1 },
+        "contentHash": { "$ref": "#/$defs/contentAddress" },
+        "format": {
+          "oneOf": [{ "$ref": "#/$defs/identifier" }, { "type": "null" }]
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "required": ["submittedAt", "startedAt", "completedAt", "durationMs"],
+      "additionalProperties": false,
+      "properties": {
+        "submittedAt": { "$ref": "#/$defs/instant" },
+        "startedAt": { "$ref": "#/$defs/instantOrNull" },
+        "completedAt": { "$ref": "#/$defs/instantOrNull" },
+        "durationMs": { "$ref": "#/$defs/int64OrNull" }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "required": ["unit", "amount"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": { "type": "string", "minLength": 1 },
+        "amount": { "$ref": "#/$defs/real" }
+      }
+    },
+    "fitOutcome": {
+      "type": "object",
+      "required": [
+        "compositeKeyHash",
+        "compositeKey",
+        "artifactRef",
+        "diagnostics",
+        "gateVerdicts",
+        "status",
+        "timing",
+        "cost",
+        "annotations",
+        "registeredAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "compositeKeyHash": { "$ref": "#/$defs/contentAddress" },
+        "compositeKey": { "$ref": "#/$defs/compositeKey" },
+        "artifactRef": {
+          "oneOf": [{ "$ref": "#/$defs/artifactRef" }, { "type": "null" }]
+        },
+        "diagnostics": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/real" }
+        },
+        "gateVerdicts": { "type": "array", "items": { "$ref": "#/$defs/gateVerdict" } },
+        "status": { "$ref": "#/$defs/lifecycleStatus" },
+        "timing": { "$ref": "#/$defs/timing" },
+        "cost": { "oneOf": [{ "$ref": "#/$defs/cost" }, { "type": "null" }] },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "registeredAt": { "$ref": "#/$defs/instant" }
+      }
+    },
+
+    "page": {
+      "type": "object",
+      "required": ["cursor", "limit"],
+      "additionalProperties": false,
+      "properties": {
+        "cursor": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      }
+    },
+    "registryQuery": {
+      "type": "object",
+      "required": ["specHashes", "vintages", "statuses", "batchId", "page"],
+      "additionalProperties": false,
+      "properties": {
+        "specHashes": { "type": "array", "items": { "$ref": "#/$defs/contentAddress" } },
+        "vintages": { "type": "array", "items": { "$ref": "#/$defs/vintageRef" } },
+        "statuses": { "type": "array", "items": { "$ref": "#/$defs/lifecycleStatus" } },
+        "batchId": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+        "page": { "$ref": "#/$defs/page" }
+      }
+    },
+    "outcomePage": {
+      "type": "object",
+      "required": ["outcomes", "nextCursor"],
+      "additionalProperties": false,
+      "properties": {
+        "outcomes": { "type": "array", "items": { "$ref": "#/$defs/fitOutcome" } },
+        "nextCursor": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] }
+      }
+    },
+
+    "scoreRequest": {
+      "type": "object",
+      "required": ["artifactKeyHash", "input", "outputDatasetId"],
+      "additionalProperties": false,
+      "properties": {
+        "artifactKeyHash": { "$ref": "#/$defs/contentAddress" },
+        "input": { "$ref": "#/$defs/vintageRef" },
+        "outputDatasetId": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "refusal": {
+      "type": "object",
+      "required": ["class"],
+      "additionalProperties": true,
+      "properties": {
+        "class": { "type": "string", "pattern": "^[a-z][A-Za-z0-9]*$" }
+      },
+      "$comment": "DELIBERATELY OPEN. §5.7.2 requires a reader to accept an unregistered class and read it as `unspecified`, so a schema that enumerated the vocabulary would reject a document the specification requires be accepted. The closed vocabulary is checked as a RULE by validate.mjs, against the registered-class list, and exempts `accept` vectors."
+    },
+
+    "envelope": {
+      "type": "object",
+      "required": ["envelopeVersion", "kind", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "envelopeVersion": { "const": 1 },
+        "kind": { "$ref": "#/$defs/documentKind" },
+        "body": { "type": "object" }
+      }
+    }
+  }
+}
