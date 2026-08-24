@@ -21,6 +21,12 @@ executable half: an implementation certifies by round-tripping, re-hashing, refu
 the fixtures its profile requires. Where this prose and the corpus disagree, that is a defect in
 this document, and the corpus is the tie-breaker — it is emitted from running code, and prose is not.
 
+**Shared conventions.** This specification is written under the conventions stated in
+`SPEC_CONVENTIONS.md`, published with the tree wire specification — canonical bytes, the corpus as
+oracle, the manifest as the authoritative enumeration, declared conformance scope, forward coupling,
+and how a specification in this family extends. They are normative here; where this document
+diverges from one, it says so.
+
 **Key words.** MUST, MUST NOT, SHOULD, SHOULD NOT, MAY are used in the RFC 2119 sense.
 
 ---
